@@ -21,7 +21,7 @@ http://data.taipei/opendata/datalist/datasetMeta?oid=e4ecb918-67cf-4207-ae5c-120
 
 Please install nodejs environment first.
 
-Then executed the following command ,then the file will output to output folder.
+Then execute the following command ,then the file will output to output folder.
 
 npm install 
 node parser.js
