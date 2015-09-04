@@ -29,9 +29,8 @@ comment = 說明
 
 * 各表欄位差異註記
 
-** 預算表沒有前年度預算欄位(year_last2)
-** 歲出表沒有節(section3) 、comment (說明) 、另外多了一行叫總計，以 summary properties 呈現。
-
+** 機關歲出表沒有前年度預算欄位(year_last2)
+** 政事歲出表沒有節(section3) 、comment (說明) 、另外多了一行叫總計，以 summary properties 呈現。
 
 * Goal 
 
