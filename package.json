@@ -1,0 +1,23 @@
+{
+  "name": "tpe_budget_2016",
+  "version": "1.0.0",
+  "description": "Convert the TPE budget 2016 from excel to json.",
+  "main": "parser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tony1223/tpe-2016-budget.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tony1223/tpe-2016-budget/issues"
+  },
+  "homepage": "https://github.com/tony1223/tpe-2016-budget",
+  "dependencies": {
+    "csv-parse": "^1.0.0",
+    "promise": "^7.0.4"
+  }
+}
