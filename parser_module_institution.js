@@ -1,4 +1,14 @@
 
+var parse = require('csv-parse');
+var Promise = require("promise");
+
+var $money = function(str){
+	if(str =="-"){
+		return 0; //convert - to 0
+	}
+	return parseInt(str.replace(/,/g,""),10);
+}
+
 var processCSV = function(err,body){
 	var p = new Promise(function(ok,fail){
 		var outputs = [];
@@ -141,9 +151,9 @@ var processCSV = function(err,body){
 						last_subject.section_string = tmpSections.join("-");
 
 						last_subject.name = o[4];
-						last_subject.year_this = parseInt(o[5].replace(/,/g,""),10);
-						last_subject.year_last = parseInt(o[6].replace(/,/g,""),10);
-						last_subject.year_compare_last = parseInt(o[7].replace(/,/g,""),10);
+						last_subject.year_this = $money(o[5]);
+						last_subject.year_last = $money(o[6]);
+						last_subject.year_compare_last = $money(o[7]);
 						// console.log(last_subject);
 					}
 
