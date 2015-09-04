@@ -6,6 +6,33 @@
 目前僅完成第一階段、機器可讀。希望能接著完成第二階段跟中央標準一致。
 
 
+* 欄位說明（目前版本）
+
+** 預算科目
+
+* 核心為陣列，陣列裡面是每一個預算 csv 的內容，其實差別只有 subjects 的 section0 。我猜把所有預算的 subjects 合起來應該也不會失去本意。
+
+* 欄位中文名稱對照  
+
+section0 = 款 
+section1 = 項
+section2 = 目
+section3 = 節
+number = 科目代碼
+name = 科目名稱
+year_this = 本年度預算
+year_last = 上年度預算
+year_last2 = 前年度預算
+last_compare_last = 本年度與上年度比較
+comment = 說明
+
+
+* 各表欄位差異註記
+
+** 預算表沒有前年度預算欄位(year_last2)
+** 歲出表沒有節(section3) 、comment (說明) 、另外多了一行叫總計，以 summary properties 呈現。
+
+
 * Goal 
 
 The application try to convert Taipei City budget 2016 from EXCEL to machine readable format(JSON).
@@ -25,6 +52,8 @@ Then execute the following command ,then the file will output to output folder.
 
 npm install 
 node parser.js
+
+
 
 
 
