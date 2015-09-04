@@ -8,7 +8,16 @@ var $money = function(str){
 		return 0; //convert - to 0
 	}
 	return parseInt(str.replace(/,/g,""),10);
-}
+};
+
+
+var $moneyF = function(str){
+	if(str =="-"){
+		return 0; //convert - to 0
+	}
+	return parseFloat(str.replace(/,/g,""),10);
+};
+
 
 var processCSV = function(err,body){
 	var p = new Promise(function(ok,fail){
@@ -21,15 +30,12 @@ var processCSV = function(err,body){
 		//	year:null,
 		// 	items:[
 		// 		// section1:null,
-		// 		// section2:null,
-		// 		// section3:null,
 		// 		// section_string:null,
-		// 		// number
 		// 		// name
-		// 		// year_this
-		// 		// year_last
-		// 		// year_last2
-		// 		// year_compare_last
+		// 		// 金額
+		// 		// 經常門
+		// 		// 資本門
+		// 		// 百分比
 		// 	];		
 		// };
 
@@ -53,6 +59,7 @@ var processCSV = function(err,body){
 				var last_sections = [null,null,null,null];
 				var last_subject_number = null;
 				var last_subject = null;
+				var last_index = 1;
 
 				output.forEach(function(o){
 					for(var i = 0 ; i < o.length ; ++i){
@@ -62,7 +69,7 @@ var processCSV = function(err,body){
 					if(o[0] && o[0].indexOf("預算案") != -1){ //大標
 						case_name = o[0];
 					}
-					if(o[0] && o[0].indexOf("預算表") != -1){ //大標
+					if(o[0] && o[0].indexOf("預算總表") != -1){ //大標
 						if( out == null){	//第一次
 							out = {
 								case_name:case_name,
@@ -85,13 +92,12 @@ var processCSV = function(err,body){
 						}
 					}
 
-					if(o[3] =="總　　　　　計"){
+					if(o[1] =="總      計"){
 						out.summary = {
-							year_this:$money(o[4]),
-							year_last:$money(o[5]),
-							year_last2:$money(o[6]),
-							year_compare_last:$money(o[7])
-						}
+							"金額":$money(o[4]),
+							"經常門":$money(o[6]),
+							"資本門":$money(o[7])
+						};
 						return true;
 					}
 
@@ -104,57 +110,23 @@ var processCSV = function(err,body){
 						last_sections[0] = parseInt(o[0],10);
 						last_sections[1] = null;
 						last_sections[2] = null;
-					}
-					if(/^[0-9]+$/.test(o[1])){ //有項
-						last_sections[1] = parseInt(o[1],10);
-						last_sections[2] = null;
-					}
-					if(/^[0-9]+$/.test(o[2])){ //有目
-						last_sections[2] = parseInt(o[2],10);
+						last_index = 1;
 					}
 
-
-					if(/^[0-9]+/.test(o[3])){ //科目代碼 get //last subject_end
-						if(last_subject != null && last_subject.section0 != 0){
-							out.subjects.push(last_subject);
-						}
+					if(o[4] != "" && o[4] !="合　　計" && o[4] != "金　　額" ){ //有金額 // 假設有金額＝第四格一定是中文科目
 						last_subject_number = o[3];
 						last_subject = {
-							section0:null,
-							section1:null,
-							section2:null,
-							section_string:null,
-							number:last_subject_number,
-							name:null,
-							year_this:null,
-							year_last:null,
-							year_last2:null,
-							year_compare_last:null,
+							section1:last_sections[0],
+							section_string:last_sections[0]+"-"+last_index,
+							name:o[1] || o[2],
+							"金額": $money(o[4]),
+							"百分比":$moneyF(o[5]),
+							"經常門":$money(o[6]),
+							"資本門":$money(o[7]),
+							index:last_index
 						};
-					}
-
-					if(o[4] != "" && o[4] !="本年度預算數"){ //有金額 // 假設有金額＝第四格一定是中文科目
-						// console.log(o);
-						//這格很重要、把能填的填一填
-						last_subject.section0 = last_sections[0];
-						last_subject.section1 = last_sections[1];
-						last_subject.section2 = last_sections[2];
-
-						var tmpSections = [];
-						for(var si = 0 ; si < last_sections.length;++si){
-							if(last_sections[si]== null){
-								break;
-							}
-							tmpSections.push(last_sections[si]);
-						}
-						last_subject.section_string = tmpSections.join("-");
-
-						last_subject.name = o[3];
-						last_subject.year_this = $money(o[4]);
-						last_subject.year_last = $money(o[5]);
-						last_subject.year_last2 = $money(o[6]);
-						last_subject.year_compare_last = $money(o[7]);
-						// console.log(last_subject);
+						last_index++;
+						out.subjects.push(last_subject);
 					}
 
 					// if(o[7] != "說明" && o[7] != ""){ //重要假設：除 header 外備註不會只有"說明" 兩字
@@ -166,9 +138,6 @@ var processCSV = function(err,body){
 
 				});
 				if(out.year != null){ //not a empty out
-					if(last_subject != null && last_subject.section0 != 0){
-						out.subjects.push(last_subject);
-					}					
 					outputs.push(out);
 				}
 				// console.log(JSON.stringify(outputs));

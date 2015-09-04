@@ -113,7 +113,7 @@ var processCSV = function(err,body){
 
 					if(/^[0-9]+/.test(o[4])){ //科目代碼 get //last subject_end
 
-						if(last_subject != null){
+						if(last_subject != null && last_subject.section0 != 0){
 							last_subject.comment = last_subject.comment.join("");
 							out.subjects.push(last_subject);
 						}
@@ -165,6 +165,10 @@ var processCSV = function(err,body){
 
 				});
 				if(out.year != null){ //not a empty out
+					if(last_subject != null && last_subject.section0 != 0){
+						last_subject.comment = last_subject.comment.join("");
+						out.subjects.push(last_subject);
+					}
 					outputs.push(out);
 				}
 				// console.log(JSON.stringify(outputs));
