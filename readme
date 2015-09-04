@@ -1,0 +1,23 @@
+
+
+* 目的
+
+本程式試著轉換台北市2016 預算 EXCEL 檔成機器可讀格式。
+目前僅完成第一階段、機器可讀。希望能接著完成第二階段跟中央標準一致。
+
+
+* Goal 
+
+The application try to convert Taipei City budget 2016 from EXCEL to machine readable format(JSON).
+
+Currently it's only at the first step (machine readable),for the main goal is to refine it with same standard of Executive Yuan version.
+
+
+Source from :
+http://data.taipei/opendata/datalist/datasetMeta?oid=e4ecb918-67cf-4207-ae5c-1203fd106a6d
+
+
+Converter Licence: CC0
+
+Made by TonyQ
+
