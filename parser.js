@@ -2,7 +2,10 @@
 
 
 var Promise = require("promise");
-var fs= require("fs");
+var fs = require("fs");
+
+var csv = require("fast-csv");
+
 
 var parseModuleGOV = require("./parser_module_gov");
 var parserModuleInstitution = require("./parser_module_institution");
@@ -40,6 +43,41 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 				out.push(item);
 			});
 		});
+
+		// year	code	amount	name	topname	depname	depcat	cat	ref
+		var csv_file = fs.createWriteStream("output/歲出機關別預算表_g0v.csv");
+
+        var csvStream = csv.format({headers: true});
+        csvStream.pipe(csv_file);
+        var sections = {};
+        var newobj = [];
+        out.forEach(function(o){
+        	o.subjects.forEach(function(s){
+
+        		sections[s.section_string] = s.name;
+        		if(s.section3 != null){
+        			var obj = {
+	        			year:o.year,
+	        			code:s.number,
+	        			amount:s.year_this,
+	        			name:s.name,
+	        			topname:sections[s.section0],
+	        			depname:sections[s.section0+"-"+s.section1],
+	        			//no more data , so ...
+	        			cat:sections[s.section0],
+	        			ref:s.section_string.replace(/-/g,".")
+	        		};
+	        		csvStream.write(obj);
+	        		newobj.push(obj);
+	        	}
+        	});
+        });
+        csvStream.end();
+		
+		fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
+			console.log(arguments);
+		});
+		
 		// console.log(JSON.stringify(out));
 		fs.writeFile("output/歲出機關別預算表.json",JSON.stringify(out),function(err){
 			console.log(arguments);
