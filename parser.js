@@ -63,6 +63,7 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 	        			name:s.name,
 	        			topname:sections[s.section0],
 	        			depname:sections[s.section0+"-"+s.section1],
+	        			depcat:sections[s.section0+"-"+s.section1],
 	        			//no more data , so ...
 	        			cat:sections[s.section0],
 	        			ref:s.section_string.replace(/-/g,".")
@@ -77,7 +78,7 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 		fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
 			console.log(arguments);
 		});
-		
+
 		// console.log(JSON.stringify(out));
 		fs.writeFile("output/歲出機關別預算表.json",JSON.stringify(out),function(err){
 			console.log(arguments);
