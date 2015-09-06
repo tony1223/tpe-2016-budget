@@ -51,6 +51,14 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
         csvStream.pipe(csv_file);
         var sections = {};
         var newobj = [];
+
+        //summary start
+        var summaryEntriesMap = {},
+        	summaryEntries = [],
+        	summaryEntriesCount = 0,
+        	allAmount = 0;
+        //summary end
+
         out.forEach(function(o){
         	o.subjects.forEach(function(s){
 
@@ -58,7 +66,7 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
         		if(s.section3 != null){
         			var obj = {
 	        			year:o.year,
-	        			code:s.number,
+	        			code:s.section_string.replace(/-/g,".")+"-"+s.number,
 	        			amount:s.year_this,
 	        			name:s.name,
 	        			topname:sections[s.section0],
@@ -68,6 +76,25 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 	        			cat:sections[s.section0],
 	        			ref:s.section_string.replace(/-/g,".")
 	        		};
+
+	        		//summary start
+	        		if(!summaryEntriesMap[obj.depname+obj.cat]){
+	        			var summary = {
+        					"depname": obj.depname,
+					    	"amount": 0,
+					    	"num_entries": 0,
+					    	"cat": obj.cat
+	        			};
+	        			summaryEntries.push(summary);
+	        			summaryEntriesMap[obj.depname+obj.cat] = summary;
+	        		}
+	        		var summary = summaryEntriesMap[obj.depname+obj.cat];
+	        		summary.num_entries++;
+	        		summaryEntriesCount++;
+	        		summary.amount += obj.amount;
+	        		allAmount+= obj.amount;
+	        		//summary end
+
 	        		csvStream.write(obj);
 	        		newobj.push(obj);
 	        	}
@@ -78,6 +105,27 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 		fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
 			console.log(arguments);
 		});
+
+		//summary start
+		fs.writeFile("output/歲出機關別預算表_g0v_drilldown.json",JSON.stringify({
+			"drilldown":summaryEntries,
+			"summary": {
+			    "num_drilldowns": summaryEntries.lnegth,
+			    "pagesize": 1000000,
+			    "cached": true,
+			    "num_entries": summaryEntriesCount,
+			    "page": 1,
+			    "currency": {
+			      "amount": "TWD"
+			    },
+			    "amount": allAmount,
+			    "cache_key": "8311c0ab057432fb04ac54847f5fc214e24c69cd",
+			    "pages": 1
+			}
+		}),function(err){
+			console.log(arguments);
+		});
+		//summary end
 
 		// console.log(JSON.stringify(out));
 		fs.writeFile("output/歲出機關別預算表.json",JSON.stringify(out),function(err){
