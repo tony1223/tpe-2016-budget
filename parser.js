@@ -45,10 +45,14 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 		});
 
 		// year	code	amount	name	topname	depname	depcat	cat	ref
-		var csv_file = fs.createWriteStream("output/歲出機關別預算表_g0v.csv");
-
+		var csv_file = fs.createWriteStream("output/歲出機關別預算表_g0v_2016.csv");
         var csvStream = csv.format({headers: true});
         csvStream.pipe(csv_file);
+
+		var csv_file2 = fs.createWriteStream("output/歲出機關別預算表_g0v_2015.csv");
+        var csvStream2 = csv.format({headers: true});
+        csvStream2.pipe(csv_file2);
+
         var sections = {};
         var newobj = [];
 
@@ -72,11 +76,25 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 	        			topname:sections[s.section0],
 	        			depname:sections[s.section0+"-"+s.section1],
 	        			depcat:sections[s.section0+"-"+s.section1],
+	        			category:sections[s.section0+"-"+s.section1+"-"+s.section2],
+	        			//no more data , so ...
+	        			cat:sections[s.section0],
+	        			ref:s.section_string.replace(/-/g,"."),
+	        			comment:s.comment
+	        		};
+	        		var obj2 = {
+	        			year:o.year -1 ,
+	        			code:s.section_string.replace(/-/g,".")+"-"+s.number,
+	        			amount:s.year_last,
+	        			name:s.name,
+	        			topname:sections[s.section0],
+	        			depname:sections[s.section0+"-"+s.section1],
+	        			category:sections[s.section0+"-"+s.section1+"-"+s.section2],
+	        			depcat:sections[s.section0+"-"+s.section1],
 	        			//no more data , so ...
 	        			cat:sections[s.section0],
 	        			ref:s.section_string.replace(/-/g,".")
 	        		};
-
 	        		//summary start
 	        		if(!summaryEntriesMap[obj.depname+obj.cat]){
 	        			var summary = {
@@ -96,11 +114,13 @@ fs.readdir("source/歲出機關別預算表/",function(err,files){
 	        		//summary end
 
 	        		csvStream.write(obj);
+	        		csvStream2.write(obj2);
 	        		newobj.push(obj);
 	        	}
         	});
         });
         csvStream.end();
+        csvStream2.end();
 		
 		fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
 			console.log(arguments);
