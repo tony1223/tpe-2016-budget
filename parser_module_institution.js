@@ -100,12 +100,12 @@ var processCSV = function(err,body){
 						target_type.name = o[5];
 						target_type.number = o[4];
 						return true;
-					}else{
+					}else if(o[0] !="款"){
 						last_sections[0] = (o[0] != "") ? parseInt(o[0],10) : null;
 						last_sections[1] = (o[1] != "") ? parseInt(o[1],10) : null;
 						last_sections[2] = (o[2] != "") ? parseInt(o[2],10) : null;
 						last_sections[3] = (o[3] != "") ? parseInt(o[3],10) : null;
-						console.log(last_sections);
+						// console.log(last_sections);
 						work = true;
 					}
 

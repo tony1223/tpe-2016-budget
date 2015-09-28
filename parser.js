@@ -36,11 +36,11 @@ processFile("source/2015.csv").then(function(outputs_ary){
 	});
 
 	// year	code	amount	name	topname	depname	depcat	cat	ref
-	var csv_file = fs.createWriteStream("output/中央歲出機關別預算表_g0v_2016.csv");
+	var csv_file = fs.createWriteStream("output/中央歲出機關別預算表_g0v_2015.csv");
       var csvStream = csv.format({headers: true});
       csvStream.pipe(csv_file);
 
-	var csv_file2 = fs.createWriteStream("output/中央歲出機關別預算表_g0v_2015.csv");
+	var csv_file2 = fs.createWriteStream("output/中央歲出機關別預算表_g0v_2014.csv");
       var csvStream2 = csv.format({headers: true});
       csvStream2.pipe(csv_file2);
 
@@ -80,25 +80,24 @@ processFile("source/2015.csv").then(function(outputs_ary){
         			name: work ? "無細項" :s.name,
         			topname:sections[s.section0],
         			depname:sections[s.section0+"-"+s.section1],
-        			depcat:s.target_type.name,
-        			category:sections[s.section0+"-"+s.section1+"-"+s.section2],
+        			depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
+        			// catgory:s.target_type.name,
         			//no more data , so ...
-        			cat:sections[s.section0],
+        			cat:s.target_type.name,
         			ref:s.section_string.replace(/-/g,"."),
         			comment:s.comment
         		};
         		var obj2 = {
         			year:o.year -1 ,
-        			code:s.section_string.replace(/-/g,".")+"-"+s.number,
-        			amount:s.year_last,
-        			name:s.name,
-        			topname:sections[s.section0],
-        			depname:sections[s.section0+"-"+s.section1],
-        			category:sections[s.section0+"-"+s.section1+"-"+s.section2],
-        			depcat:s.target_type.name,
-        			//no more data , so ...
-        			cat:sections[s.section0],
-        			ref:s.section_string.replace(/-/g,".")
+        			code:s.number,
+              amount:s.year_last,
+              name: work ? "無細項" :s.name,
+              topname:sections[s.section0],
+              depname:sections[s.section0+"-"+s.section1],
+              depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
+              // catgory:s.target_type.name,
+              cat:s.target_type.name,
+              ref:s.section_string.replace(/-/g,".")
         		};
         		//summary start
         		if(!summaryEntriesMap[obj.depname+obj.cat]){
