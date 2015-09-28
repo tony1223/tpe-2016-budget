@@ -6,13 +6,18 @@ var $money = function(str){
 	if(str =="-"){
 		return 0; //convert - to 0
 	}
-	return parseInt(str.replace(/,/g,""),10);
+	return parseInt(str.replace(/,/g,""),10) * 1000;
 }
 
 var processCSV = function(err,body){
 	var p = new Promise(function(ok,fail){
 		var outputs = [];
-		var out = null;
+		var out = {
+			case_name:null,
+			name:"",
+			year:2015,
+			subjects:[]
+		};
 
 		// {
 		// 	case_name:null,
@@ -53,68 +58,60 @@ var processCSV = function(err,body){
 				var last_sections = [null,null,null,null];
 				var last_subject_number = null;
 				var last_subject = null;
-
-
+				var target_type = {name:null,number:null};
 				output.forEach(function(o){
 					for(var i = 0 ; i < o.length ; ++i){
 						o[i]= o[i].trim(); //避免後面寫一堆 trim
 					}
 
-					if(o[0] && o[0].indexOf("預算案") != -1){ //大標
-						case_name = o[0];
-					}
-					if(o[0] && o[0].indexOf("預算表") != -1){ //大標
-						if( out == null){	//第一次
-							out = {
-								case_name:case_name,
-								name:o[0],
-								year:null,
-								subjects:[]
-							};
+					var work = false;
+					// if(/^[1-9]+$/.test(o[0])){ //有款
+					// 	last_sections[0] = parseInt(o[0],10);
+					// 	last_sections[1] = null;
+					// 	last_sections[2] = null;
+					// 	last_sections[3] = null;
+					// }
+					// if(/^[1-9]+$/.test(o[1])){ //有項
+					// 	last_sections[1] = parseInt(o[1],10);
+					// 	last_sections[2] = null;
+					// 	last_sections[3] = null;
+					// }
+					// if(/^[1-9]+$/.test(o[2])){ //有目
+					// 	last_sections[2] = parseInt(o[2],10);
+					// 	last_sections[3] = null;
+					// }
+					// if(/^[1-9]+$/.test(o[3])){ //有節
+					// 	last_sections[3] = parseInt(o[3],10);
+					// }
 
-						}else if(out.name != o[0]){ //非同一預算表底下
-							outputs.push(out);
-							out = {
-								case_name:case_name,
-								name:o[0],
-								year:null,
-								subjects:[
-								]
-							};
-						}else{ //同一預算表，跳過
+					last_sections[0] = null;
+					last_sections[1] = null;
+					last_sections[2] = null;
+					last_sections[3] = null;	
 
-						}
-					}
+					if(o[3] == "999"){
+						// last_sections[0] = (o[0] != "") ? parseInt(o[0],10) : null;
+						// last_sections[1] = (o[1] != "") ? parseInt(o[1],10) : null;
+						// last_sections[2] = (o[2] != "") ? parseInt(o[2],10) : null;
+						// last_sections[3] = null;
+						// console.log(last_sections);
+						// work = true;	
 
-
-					if(/中華民國[0-9]+年度/.test(o[0])){
-						out.year_label = o[0];
-						out.year = parseInt(o[0].match("[0-9]+")[0],10) + 1911;
-					}
-
-					if(/^[0-9]+$/.test(o[0])){ //有款
-						last_sections[0] = parseInt(o[0],10);
-						last_sections[1] = null;
-						last_sections[2] = null;
-						last_sections[3] = null;
-					}
-					if(/^[0-9]+$/.test(o[1])){ //有項
-						last_sections[1] = parseInt(o[1],10);
-						last_sections[2] = null;
-						last_sections[3] = null;
-					}
-					if(/^[0-9]+$/.test(o[2])){ //有目
-						last_sections[2] = parseInt(o[2],10);
-						last_sections[3] = null;
-					}
-					if(/^[0-9]+$/.test(o[3])){ //有節
-						last_sections[3] = parseInt(o[3],10);
+						target_type.name = o[5];
+						target_type.number = o[4];
+						return true;
+					}else{
+						last_sections[0] = (o[0] != "") ? parseInt(o[0],10) : null;
+						last_sections[1] = (o[1] != "") ? parseInt(o[1],10) : null;
+						last_sections[2] = (o[2] != "") ? parseInt(o[2],10) : null;
+						last_sections[3] = (o[3] != "") ? parseInt(o[3],10) : null;
+						console.log(last_sections);
+						work = true;
 					}
 
-					if(/^[0-9]+/.test(o[4])){ //科目代碼 get //last subject_end
 
+					if(work){ //有金額 // 假設有金額＝第四格一定是中文科目
 						if(last_subject != null && last_subject.section0 != 0){
-							last_subject.comment = last_subject.comment.join("");
 							out.subjects.push(last_subject);
 						}
 						last_subject_number = o[4];
@@ -129,11 +126,12 @@ var processCSV = function(err,body){
 							year_this:null,
 							year_last:null,
 							year_compare_last:null,
+							target_type:{
+								name:target_type.name,
+								number:target_type.number,
+							},
 							comment:[]
-						};
-					}
-
-					if(o[5] != "" && o[5] !="本年度預算數"){ //有金額 // 假設有金額＝第四格一定是中文科目
+						};						
 						// console.log(o);
 						//這格很重要、把能填的填一填
 						last_subject.section0 = last_sections[0];
@@ -150,15 +148,12 @@ var processCSV = function(err,body){
 						}
 						last_subject.section_string = tmpSections.join("-");
 
-						last_subject.name = o[4];
-						last_subject.year_this = $money(o[5]);
-						last_subject.year_last = $money(o[6]);
-						last_subject.year_compare_last = $money(o[7]);
+						last_subject.name = o[5];
+						last_subject.year_this = $money(o[6]);
+						last_subject.year_last = $money(o[7]);
+						last_subject.year_compare_last = $money(o[8]);
+						last_subject.comment = (o[9]);
 						// console.log(last_subject);
-					}
-
-					if(o[8] != "說明" && o[8] != ""){ //重要假設：除 header 外備註不會只有"說明" 兩字
-						last_subject.comment.push(o[8]);
 					}
 
 					// console.log(last_sections);
@@ -166,15 +161,13 @@ var processCSV = function(err,body){
 				});
 				if(out.year != null){ //not a empty out
 					if(last_subject != null && last_subject.section0 != 0){
-						last_subject.comment = last_subject.comment.join("");
 						out.subjects.push(last_subject);
 					}
 					outputs.push(out);
 				}
-				// console.log(JSON.stringify(outputs));
 				ok(outputs);
 			}catch(ex){
-				console.log(ex);
+				console.log(ex,ex.stack);
 			}
 			// console.log(output);
 		});
