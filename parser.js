@@ -16,8 +16,8 @@ var processFile = function(file){
 	var p = new Promise(function(ok,fail){
 		fs.readFile(file,function(err,body){
 			// console.log(file,err,body);
-			parserModuleInstitution(err,body).then(ok,function(){
-				console.log(arguments);
+			parserModuleInstitution(err,body).then(ok,function(err){
+				console.log(err,err.stack);
 			});
 		});
 	});
