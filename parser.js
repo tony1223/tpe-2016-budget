@@ -25,137 +25,123 @@ var processFile = function(file){
 }
 
 // fs.readFile("01市議會-表格 1.csv",processCSV);
-
+var from = "source/csv";
 
 //process 總預算案
+fs.readdir(from,function(err,files){
+  var promises = [];
+  files.forEach(function(f){
+    if(f==".DS_Store"){
+      return true;
+    }
+    promises.push(processFile(from+"/"+f));
+    return false;
+  });
 
-processFile("source/2015.csv").then(function(outputs_ary){
-	var out = [];
-	outputs_ary.forEach(function(ary){
-    out.push(ary);
-	});
+  Promise.all(promises).then(function(outputs){
 
-	// year	code	amount	name	topname	depname	depcat	cat	ref
-	var csv_file = fs.createWriteStream("output/中央歲出機關別預算表_g0v_2015.csv");
-      var csvStream = csv.format({headers: true});
-      csvStream.pipe(csv_file);
-
-	var csv_file2 = fs.createWriteStream("output/中央歲出機關別預算表_g0v_2014.csv");
-      var csvStream2 = csv.format({headers: true});
-      csvStream2.pipe(csv_file2);
-
-      var sections = {};
-      var newobj = [];
-
-      //summary start
-      var summaryEntriesMap = {},
-      	summaryEntries = [],
-      	summaryEntriesCount = 0,
-      	allAmount = 0;
-      //summary end
+  });
+  
 
 
-      out.forEach(function(o){
-      	o.subjects.forEach(function(s,ind){
-      		sections[s.section_string] = s.name;
-          var work = false;
-          if(s.section2 != null && s.section3 == null ){
-            
-            if(o.subjects[ind+1]){
-              if(o.subjects[ind+1].section_string.indexOf(s.section_string) == -1){
-                work = true;
-                // console.log(s.section_string,o.subjects[ind+1].section_string);
-                // s.section3 = -1;
-              }else{
-                // console.log("dup",s.section_string,o.subjects[ind+1].section_string);
+  Promise.all(promises).then(function(outputs_ary){
+
+    // year code  amount  name  topname depname depcat  cat ref
+    var csv_file = fs.createWriteStream("output/歲出機關別預算表_g0v_current.csv");
+        var csvStream = csv.format({headers: true});
+        csvStream.pipe(csv_file);
+
+    var csv_file2 = fs.createWriteStream("output/歲出機關別預算表_g0v_last.csv");
+        var csvStream2 = csv.format({headers: true});
+        csvStream2.pipe(csv_file2);
+
+        var sections = {};
+        var newobj = [];
+
+        //summary start
+        var summaryEntriesMap = {},
+          summaryEntries = [],
+          summaryEntriesCount = 0,
+          allAmount = 0;
+        //summary end
+
+
+        outputs_ary.forEach(function(o){
+          o = o[0];
+          try{
+            o.subjects.forEach(function(s,ind){
+              try{
+                sections[s.section_string] = s.name;
+                
+
+                if(s.section3 != null ){
+                  var obj = {
+                    year:o.year,
+                    code:s.number,
+                    amount:s.year_this,
+                    name: s.name,
+                    topname:sections[s.section0],
+                    depname:sections[s.section0+"-"+s.section1],
+                    depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    catgory:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    //no more data , so ...
+                    // cat:s.target_type.name,
+                    ref:s.section_string.replace(/-/g,"."),
+                    comment:s.comment
+                  };
+                  var obj2 = {
+                    year:o.year -1 ,
+                    code:s.number,
+                    amount:s.year_last,
+                    name: s.name,
+                    topname:sections[s.section0],
+                    depname:sections[s.section0+"-"+s.section1],
+                    depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    catgory:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    ref:s.section_string.replace(/-/g,".")
+                  };
+                  //summary start
+                  if(!summaryEntriesMap[obj.depname+obj.cat]){
+                    var summary = {
+                      "depname": obj.depname,
+                      "amount": 0,
+                      "num_entries": 0,
+                      "cat": obj.cat
+                    };
+                    summaryEntries.push(summary);
+                    summaryEntriesMap[obj.depname+obj.cat] = summary;
+                  }
+                  var summary = summaryEntriesMap[obj.depname+obj.cat];
+                  summary.num_entries++;
+                  summaryEntriesCount++;
+                  summary.amount += obj.amount;
+                  allAmount+= obj.amount;
+                  //summary end
+
+                  csvStream.write(obj);
+                  csvStream2.write(obj2);
+                  newobj.push(obj);
+                }
+              }catch(ex){
+                console.log(ex,ex.stack);
               }
-            }
+            });
+          }catch(ex){
+            console.log(ex,ex.stack);
           }
-
-      		if(s.section3 != null || work){
-      			var obj = {
-        			year:o.year,
-        			code:s.number,
-        			amount:s.year_this,
-        			name: work ? "無細項" :s.name,
-        			topname:sections[s.section0],
-        			depname:sections[s.section0+"-"+s.section1],
-        			depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
-        			// catgory:s.target_type.name,
-        			//no more data , so ...
-        			cat:s.target_type.name,
-        			ref:s.section_string.replace(/-/g,"."),
-        			comment:s.comment
-        		};
-        		var obj2 = {
-        			year:o.year -1 ,
-        			code:s.number,
-              amount:s.year_last,
-              name: work ? "無細項" :s.name,
-              topname:sections[s.section0],
-              depname:sections[s.section0+"-"+s.section1],
-              depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
-              // catgory:s.target_type.name,
-              cat:s.target_type.name,
-              ref:s.section_string.replace(/-/g,".")
-        		};
-        		//summary start
-        		if(!summaryEntriesMap[obj.depname+obj.cat]){
-        			var summary = {
-      					"depname": obj.depname,
-				    	"amount": 0,
-				    	"num_entries": 0,
-				    	"cat": obj.cat
-        			};
-        			summaryEntries.push(summary);
-        			summaryEntriesMap[obj.depname+obj.cat] = summary;
-        		}
-        		var summary = summaryEntriesMap[obj.depname+obj.cat];
-        		summary.num_entries++;
-        		summaryEntriesCount++;
-        		summary.amount += obj.amount;
-        		allAmount+= obj.amount;
-        		//summary end
-
-        		csvStream.write(obj);
-        		csvStream2.write(obj2);
-        		newobj.push(obj);
-        	}
-      	});
+        });
+        csvStream.end();
+        csvStream2.end();
+        
+      fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
+        console.log(arguments);
       });
-      csvStream.end();
-      csvStream2.end();
-	
-	fs.writeFile("output/中央歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
-		console.log(arguments);
-	});
 
-	//summary start
-	fs.writeFile("output/中央歲出機關別預算表_g0v_drilldown.json",JSON.stringify({
-		"drilldown":summaryEntries,
-		"summary": {
-		    "num_drilldowns": summaryEntries.lnegth,
-		    "pagesize": 1000000,
-		    "cached": true,
-		    "num_entries": summaryEntriesCount,
-		    "page": 1,
-		    "currency": {
-		      "amount": "TWD"
-		    },
-		    "amount": allAmount,
-		    "cache_key": "8311c0ab057432fb04ac54847f5fc214e24c69cd",
-		    "pages": 1
-		}
-	}),function(err){
-		console.log(arguments);
-	});
-	//summary end
+  });
 
-	// console.log(JSON.stringify(out));
-	fs.writeFile("output/中央歲出機關別預算表.json",JSON.stringify(out),function(err){
-		console.log(arguments);
-	});
-});
+})
+
+
 
 
 

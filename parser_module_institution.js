@@ -64,57 +64,31 @@ var processCSV = function(err,body){
 						o[i]= o[i].trim(); //避免後面寫一堆 trim
 					}
 
-					var work = false;
-					// if(/^[1-9]+$/.test(o[0])){ //有款
-					// 	last_sections[0] = parseInt(o[0],10);
-					// 	last_sections[1] = null;
-					// 	last_sections[2] = null;
-					// 	last_sections[3] = null;
-					// }
-					// if(/^[1-9]+$/.test(o[1])){ //有項
-					// 	last_sections[1] = parseInt(o[1],10);
-					// 	last_sections[2] = null;
-					// 	last_sections[3] = null;
-					// }
-					// if(/^[1-9]+$/.test(o[2])){ //有目
-					// 	last_sections[2] = parseInt(o[2],10);
-					// 	last_sections[3] = null;
-					// }
-					// if(/^[1-9]+$/.test(o[3])){ //有節
-					// 	last_sections[3] = parseInt(o[3],10);
-					// }
-
-					last_sections[0] = null;
-					last_sections[1] = null;
-					last_sections[2] = null;
-					last_sections[3] = null;	
-
-					if(o[3] == "999"){
-						// last_sections[0] = (o[0] != "") ? parseInt(o[0],10) : null;
-						// last_sections[1] = (o[1] != "") ? parseInt(o[1],10) : null;
-						// last_sections[2] = (o[2] != "") ? parseInt(o[2],10) : null;
-						// last_sections[3] = null;
-						// console.log(last_sections);
-						// work = true;	
-
-						target_type.name = o[5];
-						target_type.number = o[4];
-						return true;
-					}else if(o[0] !="款"){
-						last_sections[0] = (o[0] != "") ? parseInt(o[0],10) : null;
-						last_sections[1] = (o[1] != "") ? parseInt(o[1],10) : null;
-						last_sections[2] = (o[2] != "") ? parseInt(o[2],10) : null;
-						last_sections[3] = (o[3] != "") ? parseInt(o[3],10) : null;
-						// console.log(last_sections);
-						work = true;
+					if(/^[0-9]+$/.test(o[0])){ //有款
+						last_sections[0] = parseInt(o[0],10);
+						last_sections[1] = null;
+						last_sections[2] = null;
+						last_sections[3] = null;
+					}
+					if(/^[0-9]+$/.test(o[1])){ //有項
+						last_sections[1] = parseInt(o[1],10);
+						last_sections[2] = null;
+						last_sections[3] = null;
+					}
+					if(/^[0-9]+$/.test(o[2])){ //有目
+						last_sections[2] = parseInt(o[2],10);
+						last_sections[3] = null;
+					}
+					if(/^[0-9]+$/.test(o[3])){ //有節
+						last_sections[3] = parseInt(o[3],10);
 					}
 
-
-					if(work){ //有金額 // 假設有金額＝第四格一定是中文科目
+					if(o[5] != "" && o[5] !="本年度\n預算數" ){ //有金額 // 假設有金額＝第四格一定是中文科目
 						if(last_subject != null && last_subject.section0 != 0){
+							last_subject.comment = last_subject.comment.join("");
 							out.subjects.push(last_subject);
 						}
-						last_subject_number = o[4];
+						last_subject_number = o[4].split("\n")[0].trim();
 						last_subject = {
 							section0:null,
 							section1:null,
@@ -126,10 +100,6 @@ var processCSV = function(err,body){
 							year_this:null,
 							year_last:null,
 							year_compare_last:null,
-							target_type:{
-								name:target_type.name,
-								number:target_type.number,
-							},
 							comment:[]
 						};						
 						// console.log(o);
@@ -148,12 +118,16 @@ var processCSV = function(err,body){
 						}
 						last_subject.section_string = tmpSections.join("-");
 
-						last_subject.name = o[5];
-						last_subject.year_this = $money(o[6]);
-						last_subject.year_last = $money(o[7]);
+						last_subject.name = o[4].split("\n").slice(1).join("").replace(/　/gi,"").trim();
+						last_subject.year_this = $money(o[5]);
+						last_subject.year_last = $money(o[6]);
 						last_subject.year_compare_last = $money(o[8]);
-						last_subject.comment = (o[9]);
+						last_subject.comment = [];
 						// console.log(last_subject);
+					}
+
+					if(o[9] != "" && last_subject != null){
+						last_subject.comment.push(o[9]);
 					}
 
 					// console.log(last_sections);
@@ -161,6 +135,7 @@ var processCSV = function(err,body){
 				});
 				if(out.year != null){ //not a empty out
 					if(last_subject != null && last_subject.section0 != 0){
+						last_subject.comment = last_subject.comment.join("");
 						out.subjects.push(last_subject);
 					}
 					outputs.push(out);
