@@ -84,9 +84,9 @@ fs.readdir(from,function(err,files){
                     topname:sections[s.section0],
                     depname:sections[s.section0+"-"+s.section1],
                     depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
-                    catgory:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    category:sections[s.section0+"-"+s.section1+"-"+s.section2],
                     //no more data , so ...
-                    // cat:s.target_type.name,
+                    cat:sections[s.section0],
                     ref:s.section_string.replace(/-/g,"."),
                     comment:s.comment
                   };
@@ -98,7 +98,8 @@ fs.readdir(from,function(err,files){
                     topname:sections[s.section0],
                     depname:sections[s.section0+"-"+s.section1],
                     depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
-                    catgory:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    category:sections[s.section0+"-"+s.section1+"-"+s.section2],
+                    cat:sections[s.section0],
                     ref:s.section_string.replace(/-/g,".")
                   };
                   //summary start
