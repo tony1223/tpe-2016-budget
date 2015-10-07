@@ -79,6 +79,7 @@ fs.readdir(from,function(err,files){
                     year:o.year,
                     code:s.number,
                     amount:s.year_this,
+                    last_amount:s.year_last,
                     name: s.name,
                     topname:sections[s.section0],
                     depname:sections[s.section0+"-"+s.section1],

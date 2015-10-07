@@ -123,7 +123,7 @@ var processCSV = function(err,body){
 						last_subject.year_last = $money(o[6]);
 						last_subject.year_compare_last = $money(o[8]);
 						last_subject.comment = [];
-						// console.log(last_subject);
+						console.log(last_subject);
 					}
 
 					if(o[9] != "" && last_subject != null){
