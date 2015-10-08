@@ -65,7 +65,7 @@ fs.readdir(from,function(err,files){
           allAmount = 0;
         //summary end
 
-
+        var obj_rd = [];
         outputs_ary.forEach(function(o){
           o = o[0];
           try{
@@ -75,13 +75,15 @@ fs.readdir(from,function(err,files){
                 
 
                 if(s.section3 != null ){
+                  var topname = sections[s.section0];
+                  topname = topname =="臺中市政府主管"? topname:topname.replace("臺中市政府","") ;
                   var obj = {
                     year:o.year,
                     code:s.number,
                     amount:s.year_this,
                     last_amount:s.year_last,
                     name: s.name,
-                    topname:sections[s.section0],
+                    topname:topname,
                     depname:sections[s.section0+"-"+s.section1],
                     depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
                     category:sections[s.section0+"-"+s.section1+"-"+s.section2],
@@ -95,7 +97,7 @@ fs.readdir(from,function(err,files){
                     code:s.number,
                     amount:s.year_last,
                     name: s.name,
-                    topname:sections[s.section0],
+                    topname:topname,
                     depname:sections[s.section0+"-"+s.section1],
                     depcat:sections[s.section0+"-"+s.section1+"-"+s.section2],
                     category:sections[s.section0+"-"+s.section1+"-"+s.section2],
@@ -120,6 +122,9 @@ fs.readdir(from,function(err,files){
                   allAmount+= obj.amount;
                   //summary end
 
+                  if(obj.depname == "臺中市政府研究發展考核委員會"){
+                    obj_rd.push(obj);
+                  }
                   csvStream.write(obj);
                   csvStream2.write(obj2);
                   newobj.push(obj);
@@ -138,6 +143,11 @@ fs.readdir(from,function(err,files){
       fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
         console.log(arguments);
       });
+
+      fs.writeFile("output/歲出機關別預算表_研考會_g0v.json",JSON.stringify(obj_rd),function(err){
+        console.log(arguments);
+      });
+      
 
   });
 
