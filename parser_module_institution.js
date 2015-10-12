@@ -15,7 +15,7 @@ var processCSV = function(err,body){
 		var out = {
 			case_name:null,
 			name:"",
-			year:2015,
+			year:2016,
 			subjects:[]
 		};
 
