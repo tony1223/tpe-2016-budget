@@ -55,6 +55,10 @@ fs.readdir(from,function(err,files){
         var csvStream2 = csv.format({headers: true});
         csvStream2.pipe(csv_file2);
 
+    var csv_file3 = fs.createWriteStream("output/歲出機關別預算表_full.csv");
+        var csvStream3 = csv.format({headers: true});
+        csvStream3.pipe(csv_file3);
+
         var sections = {};
         var newobj = [];
 
@@ -73,6 +77,23 @@ fs.readdir(from,function(err,files){
               try{
                 sections[s.section_string] = s.name;
                 
+                csvStream3.write({
+                  "年份":o.year,
+                  "科目代碼":s.number,
+                  "當年度金額":s.year_this,
+                  "上年度金額":s.year_last,
+                  "款":s.section0,
+                  "款名":sections[s.section0],
+                  "項":s.section1,
+                  "項名":sections[s.section0+"-"+s.section1],
+                  "目":s.section2,
+                  "目名":sections[s.section0+"-"+s.section1+"-"+s.section2],
+                  "節":s.section3,
+                  "節名":sections[s.section0+"-"+s.section1+"-"+s.section2+"-"+s.section3],
+                  "備註":s.comment,
+                  ref:s.section_string.replace(/-/g,"."),
+                })
+
 
                 if(s.section3 != null ){
                   var topname = sections[s.section0];
@@ -139,6 +160,7 @@ fs.readdir(from,function(err,files){
         });
         csvStream.end();
         csvStream2.end();
+        csvStream3.end();
         
       fs.writeFile("output/歲出機關別預算表_g0v.json",JSON.stringify(newobj),function(err){
         console.log(arguments);
