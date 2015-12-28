@@ -34,7 +34,8 @@ var promises = [
     var stream = fs.createReadStream("source/data.json");
 
     var result = {
-      subjects:[]
+      subjects:[],
+      year:2016
     };
     csv
      .fromStream(stream, {headers : true})
